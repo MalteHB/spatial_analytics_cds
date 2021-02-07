@@ -1,0 +1,144 @@
+---
+title: "W1"
+author: "Malte Højmark-Bertelsen"
+date: "02/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Packages
+```{r}
+pacman::p_load(leaflet, htmltools, htmlwidgets, tidyverse)
+```
+
+
+### Read data
+```{r}
+df <- read_csv("data/RCFeature.csv")
+
+```
+
+### Data cleaning
+```{r}
+df <- df %>% filter(!is.na(Longitude)) %>% filter(!is.na(Latitude))
+```
+
+
+### Creating basic interactive map with different ESRI provider tiles
+```{r}
+l_bm <- leaflet() %>%   # assign the base location to an object
+  setView(lng = mean(df$Longitude),
+          lat = mean(df$Latitude),
+          zoom = 15)
+
+
+esri <- grep("^Esri", providers, value = TRUE)
+
+for (provider in esri) {
+  l_bm <- l_bm %>% addProviderTiles(provider, group = provider)
+}
+
+
+bm <- l_bm %>%
+  addLayersControl(baseGroups = names(esri),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  addMiniMap(tiles = esri[[1]], toggleDisplay = TRUE,
+             position = "bottomright") %>%
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>% 
+  htmlwidgets::onRender("
+                        function(el, x) {
+                        var myMap = this;
+                        myMap.on('baselayerchange',
+                        function (e) {
+                        myMap.minimap.changeLayer(L.tileLayer.provider(e.name));
+                        })
+                        }") %>% 
+  addControl("", position = "topright")
+bm
+```
+
+
+
+### Creating interactive map of Blue Mountains with markers
+```{r}
+bm_no_cluster <- bm %>% 
+  addTiles() %>% 
+  addMarkers(lng = df$Longitude, 
+             lat = df$Latitude,
+             popup = paste("Feature ID", df$FeatureID, "<br>",
+                           "Feature Type:", df$FeatureType, "<br>",
+                           "Description:", df$Description, "<br>"),
+             #clusterOptions = markerClusterOptions()
+             ) %>% 
+  addLayersControl(baseGroups = names(esri),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  addMiniMap(tiles = esri[[1]], toggleDisplay = TRUE,
+             position = "bottomright") %>%
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>% 
+  htmlwidgets::onRender("
+                        function(el, x) {
+                        var myMap = this;
+                        myMap.on('baselayerchange',
+                        function (e) {
+                        myMap.minimap.changeLayer(L.tileLayer.provider(e.name));
+                        })
+                        }") %>% 
+  addControl("", position = "topright")
+bm_no_cluster
+```
+
+
+### Creating interactive map of Blue Mountains with markers clustering
+```{r}
+bm_cluster <- bm %>% 
+  addTiles() %>% 
+  addMarkers(lng = df$Longitude, 
+             lat = df$Latitude,
+             popup = paste("Feature ID", df$FeatureID, "<br>",
+                           "Feature Type:", df$FeatureType, "<br>",
+                           "Description:", df$Description, "<br>"),
+             clusterOptions = markerClusterOptions()
+             ) %>% 
+  addLayersControl(baseGroups = names(esri),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  addMiniMap(tiles = esri[[1]], toggleDisplay = TRUE,
+             position = "bottomright") %>%
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>% 
+  htmlwidgets::onRender("
+                        function(el, x) {
+                        var myMap = this;
+                        myMap.on('baselayerchange',
+                        function (e) {
+                        myMap.minimap.changeLayer(L.tileLayer.provider(e.name));
+                        })
+                        }") %>% 
+  addControl("", position = "topright")
+bm_cluster
+```
+
+### Conclusion
+Using the clustering algorithm creates very nice clusters of the geographical points, however, it does not manage to give a precise view of the actual location of the ruins in the Blue Mountains. I do, therefore, not recommend using clustering.
+
+### Writing HTML without clustering
+```{r}
+saveWidget(bm_no_cluster, "bm.html", selfcontained = TRUE)
+```
