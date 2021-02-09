@@ -38,20 +38,20 @@ When the geographic data you read in with `sf` already has a CRS defined both `s
 
 ```{r crs, eval=FALSE}
 # Determine the CRS for the neighborhoods and trees vector objects
-___(neighborhoods)
-___(trees)
+st_crs(neighborhoods)
+st_crs(trees)
 
 # Assign the CRS to trees
 crs_1 <- "+proj=longlat +ellps=WGS84 +no_defs"
-___(trees) <- ___
+st_crs(trees) <- crs_1
 
 # Determine the CRS for the canopy and manhattan rasters
-___(canopy)
-___(manhattan)
+crs(canopy)
+crs(manhattan)
 
 # Assign the CRS to manhattan
 crs_2 <- "+proj=utm +zone=18 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
-___(manhattan) <- ___
+crs(manhattan) <- crs_2
 
 ```
 
@@ -77,21 +77,21 @@ Note that you will use `method = "ngb"` in your call to `projectRaster()` to pre
 
 ```{r crs-assign, eval=FALSE}
 # Get the CRS from the canopy object
-the_crs <- ___(canopy, asText = TRUE)
+the_crs <- crs(canopy, asText = TRUE)
 
 # Project trees to match the CRS of canopy
-trees_crs <- ___(trees, crs = ___)
+trees_crs <- st_transform(trees, crs = the_crs)
 
 # Project neighborhoods to match the CRS of canopy
-neighborhoods_crs <- ___(neighborhoods, ___ = ___)
+neighborhoods_crs <- st_transform(neighborhoods, crs = the_crs)
 
 # Project manhattan to match the CRS of canopy
-manhattan_crs <- ___(manhattan, crs = ___, method = "ngb")
+manhattan_crs <- projectRaster(manhattan, crs = the_crs, method = "ngb")
 
 # Look at the CRS to see if they match
-___(trees_crs)
-___(neighborhoods_crs)
-___(manhattan_crs)
+st_crs(trees_crs)
+st_crs(neighborhoods_crs)
+crs(manhattan_crs)
 
 ```
 
@@ -118,23 +118,23 @@ Make sure `sf`, `raster` and `tmap` are loaded in your workspace.
 ```{r plot, eval=FALSE}
 # Plot canopy and neighborhoods (run both lines together)
 # Do you see the neighborhoods?
-___(canopy)
-___(neighborhoods, add = TRUE)
+plot(canopy)
+plot(neighborhoods, add = TRUE)
 
 # See if canopy and neighborhoods share a CRS
-___(neighborhoods)
-___(canopy)
+st_crs(neighborhoods)
+crs(canopy)
 
 # Save the CRS of the canopy layer
-the_crs <- ___(canopy, asText = ___)
+the_crs <- crs(canopy, asText = TRUE)
 
 # Transform the neighborhoods CRS to match canopy
-neighborhoods_crs <- ___(neighborhoods, crs = ___)
+neighborhoods_crs <- st_transform(neighborhoods, crs = the_crs)
 
 # Re-run plotting code (run both lines together)
 # Do the neighborhoods show up now?
-___(canopy)
-___(neighborhoods_crs, add = TRUE)
+plot(canopy)
+plot(neighborhoods_crs, add = TRUE)
 
 # Simply run the tmap code
 tm_shape(canopy) + 

@@ -38,21 +38,21 @@ Instead of storing raster objects in data frames, the `raster` package stores sp
 
 ```{r load raster, eval=FALSE, echo=TRUE}
 # Load the raster package
-___(___)
+pacman::p_load(raster)
 
 # Read in the rasters
-canopy <- ___("data/canopy.tif")
-manhattan <- ___("data/manhattan.tif")
+canopy <- raster("data/canopy.tif")
+manhattan <- brick("data/manhattan.tif")
 
 # Get the extent of the canopy object
-___(___)
+extent(canopy)
 
 # Get the CRS of the manhattan object
-___(___)
+crs(manhattan)
 
 # Determine the number of grid cells in both raster objects
-___(manhattan)
-___(canopy)
+ncell(manhattan)
+ncell(canopy)
 ```
 
 Great work! Although rasters are not stored as data frames, the metadata can easily be extracted using functions like `extent()`, `crs()` and `ncell()`.

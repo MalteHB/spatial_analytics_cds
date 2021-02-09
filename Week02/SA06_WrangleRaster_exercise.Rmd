@@ -38,31 +38,31 @@ For rasters, the function to reduce resolution is `aggregate()` which, as you mi
 
 ```{r aggr, eval=FALSE}
 # Library
-___(raster)
+pacman::p_load(raster)
 
 # Read in the canopy layer
-canopy <- ___("data/canopy.tif")
+canopy <- raster("data/canopy.tif")
 
 # Plot the canopy raster
-___(canopy)
+plot(canopy)
 
 # Determine the raster resolution
-___(canopy)
+res(canopy)
 
 # Determine the number of cells
-___(canopy)
+ncell(canopy)
 
 # Aggregate the raster
-canopy_small <- ___(canopy, fact = ___)
+canopy_small <- aggregate(canopy, fact = 2)
 
 # Plot the new canopy layer
-___(canopy_small)
+plot(canopy_small)
 
 # Determine the new raster resolution
-___(canopy_small)
+res(canopy_small)
 
 # Determine the number of cells in the new raster
-___(canopy_small)
+ncell(canopy_small)
 ```
 
 Excellent job! In this example you read in a raster and then converted it to a lower resolution raster to save on the size of the object and ultimately computation power required. In this example, the raster was not too big to begin with so perhaps aggregating would not be necessary but for big rasters this can be a big help.
@@ -82,16 +82,16 @@ In the `canopy` raster you've worked with the values are percentages and are sup
 
 ```{r reclass, eval=FALSE}
 # Plot the canopy layer to see the values above 100
-___(canopy)
+plot(canopy)
 
 # Set up the matrix
-vals <- ___(100, 300, NA)
+vals <- cbind(100, 300, NA)
 
 # Reclassify 
-canopy_reclass <- ___(canopy, ___ = ___)
+canopy_reclass <- reclassify(canopy, rcl = vals)
 
 # Plot again and confirm that the legend stops at 100
-___(canopy_reclass)
+plot(canopy_reclass)
 
 ```
 
