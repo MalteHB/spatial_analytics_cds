@@ -66,9 +66,21 @@ lc_data_masked <- mask(crop(lc_data, study_area), study_area)
 # Your solution (type answer to the questions as code comments and the code used)
 
 # /Start Code/ #
+zion
+# 1. 'zion' is a vector with points representing a geometrical shape of type 'polygon' over the national park named "Zion".
+# It has X and Y coordinates and is its projected CRS is located on the nothern hemisphere.
+crs(zion)
+# It uses the GRS80 coordinate system.
 
 
-
+srtm
+# 2. 'srtm' is a raster object, with three dimensions where the third is cells containing different elevation values in Zion.
+extent(srtm)
+# Its x-values range from -113.2396 to -112.8521 where the y-values range from 37.13208 to 37.51292.
+crs(srtm)
+# The coordinate system used is WGS84 and its projected to longitute/langitude.
+res(srtm)
+# The data resolution for x and y is 0.00083.
 # /End Code/ #
 
 #### Exercise II ####
@@ -84,7 +96,16 @@ lc_data_masked <- mask(crop(lc_data, study_area), study_area)
 # Your solution
 
 # /Start Code/ #
+# 1.
+zion_crs <- crs(zion, asText = TRUE)
+srtm2 <- projectRaster(srtm, crs = zion_crs)
+plot(srtm)
+plot(srtm2)
 
-
+# 2.
+srtm_crs <- crs(srtm, asText = TRUE)
+zion2 <- st_transform(zion, crs = srtm_crs)
+plot(zion, max.plot = 11)
+plot(zion2, max.plot = 11)
 
 # /End Code/ #

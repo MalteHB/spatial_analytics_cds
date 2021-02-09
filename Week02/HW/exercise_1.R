@@ -77,7 +77,7 @@ tm_shape(nz_elev)  +
 # /Start Code/ #
 
 tm_shape(nz_elev)  +
-  tm_raster(title = "Elevation \n(Meters above sea level)", 
+  tm_raster(title = "Elevation (MASL)", 
             style = "cont",
             palette = "-RdYlGn") +
   tm_shape(nz) +
@@ -106,42 +106,27 @@ zion = read_sf(system.file("vector/zion.gpkg", package = "spDataLarge"))
 # Your solution
 
 # /Start Code/ #
-tm_shape(srtm)  +
-  tm_raster(title = "Elevation \n(Meters above sea level)", 
+tm_shape(srtm)  + # Load the raster data
+  tm_raster(title = "Elevation \n(MASL)", 
             style = "cont",
-            palette = "YlOrRd") +
-  tm_shape(zion) +
-  tm_borders(col = "black", 
-             lwd = 0.5) +
+            palette = "-Greens", 
+            breaks = c(1000, 1500, 2000, 2500, 3000) # Define the breaks of the legend
+            ) +
+  tm_shape(zion) + # Load the vector data
+  tm_polygons(alpha = 0.05, # Using polygons to get transparency
+              lwd = 1,
+              border.col = "black") +
   tm_scale_bar(breaks = c(0, 2.5, 5, 10, 20),
                text.size = 1,
                position = c("LEFT", "bottom")) +
   tm_compass(position = c("RIGHT", "top"),
-             type = "rose", 
+             type = "radar", 
              size = 2) +
-  tm_credits(text = "M. Højmark-Bertelsen, 20210209") +
+  tm_credits(position = c("LEFT", "bottom"),
+             text = "M. Højmark-Bertelsen, 20210209",
+             size = 0.8) +
   tm_layout(main.title = "Zion National Park Area",
             bg.color = "lightblue",
-            inner.margins = c(0, 0, 0, 0))
-
-
-
-tm_shape(zion)  +
-  tm_raster(title = "Elevation \n(Meters above sea level)", 
-            style = "cont",
-            palette = "-RdYlGn") +
-  tm_shape(nz) +
-  tm_borders(col = "black", 
-             lwd = 1.5) +
-  tm_scale_bar(breaks = c(0, 50, 100, 200, 400),
-               text.size = 1) +
-  tm_compass(position = c("RIGHT", "top"),
-             type = "rose", 
-             size = 2) +
-  tm_credits(text = "M. Højmark-Bertelsen, 20210209") +
-  tm_layout(main.title = "New Zealand",
-            bg.color = "lightblue",
-            inner.margins = c(0, 0, 0, 0))
-
-
+            inner.margins = c(0.08, 0, 0, 0),
+            legend.position = c("right", "top")) # Changing legend position.
 # /End Code/ #
