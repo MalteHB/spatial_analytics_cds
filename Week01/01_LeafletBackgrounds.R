@@ -6,8 +6,8 @@
 ## beware that some need extra options specified
 
 # Packages
-# install.packages("leaflet")
-# install.packages("htmltools")
+install.packages("leaflet")
+install.packages("htmltools")
 
 # Example with Markers
 library(leaflet)
@@ -39,10 +39,10 @@ leaflet() %>%
   addProviderTiles("Esri.WorldPhysical", group = "Physical") %>% 
   addProviderTiles("Esri.WorldImagery", group = "Aerial") %>% 
   addProviderTiles("MtbMap", group = "Geo") %>% 
-
-addLayersControl(
-  baseGroups = c("Geo","Aerial", "Physical"),
-  options = layersControlOptions(collapsed = T))
+  
+  addLayersControl(
+    baseGroups = c("Geo","Aerial", "Physical"),
+    options = layersControlOptions(collapsed = T))
 
 # note that you can feed plain Lat Long columns into Leaflet
 # without having to convert into spatial objects (sf), or projecting
@@ -86,8 +86,8 @@ AUSmap <- l_aus %>%
                         function (e) {
                         myMap.minimap.changeLayer(L.tileLayer.provider(e.name));
                         })
-                        }") %>%
-addControl("", position = "topright")
+                        }") %>% 
+  addControl("", position = "topright")
 
 AUSmap
 
@@ -98,26 +98,28 @@ AUSmap
 library(htmlwidgets)
 saveWidget(AUSmap, "AUSmap.html", selfcontained = TRUE)
 
-# for saving outside root https://stackoverflow.com/questions/41399795/savewidget-from-htmlwidget-in-r-cannot-save-html-file-in-another-folder
+
 ################################## ADD DATA TO LEAFLET
 # Libraries
 library(tidyverse)
 library(googlesheets4)
 library(leaflet)
 
-places <- read_sheet("https://docs.google.com/spreadsheets/d/1PlxsPElZML8LZKyXbqdAYeQCDIvDps2McZx1cTVWSzI/edit#gid=0",col_types = "cccnncn")
+places <- read_sheet("https://docs.google.com/spreadsheets/d/1PlxsPElZML8LZKyXbqdAYeQCDIvDps2McZx1cTVWSzI/edit#gid=0",col_types = "cccnncn") %>% 
+  filter(!is.na(Longitude))
 glimpse(places)
-places <- places %>% filter(!is.na(Longitude))
 
-gs4_auth_configure()
-gs4_has_token()
-
-
-MapDK %>% 
-  addCircleMarkers(lng = places$Longitude, 
+leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lng = places$Longitude, 
              lat = places$Latitude,
-             popup = places$Description,
-             clusterOptions = markerClusterOptions())
+             popup = places$Description)
+
+DKmap %>% 
+  addTiles() %>% 
+  addMarkers(lng = places$Longitude, 
+             lat = places$Latitude,
+             popup = places$Description)
 
 #########################################################
 #
@@ -126,3 +128,38 @@ MapDK %>%
 # The googlesheet is at https://docs.google.com/spreadsheets/d/1PlxsPElZML8LZKyXbqdAYeQCDIvDps2McZx1cTVWSzI/edit#gid=0
 
 #########################################################
+
+# Task 1
+
+l_dk <- leaflet() %>%   # assign the base location to an object
+  setView(lat = 56.46572236, lng = 10.00950305, zoom = 16)
+
+
+esri <- grep("^Esri", providers, value = TRUE)
+
+for (provider in esri) {
+  l_dk <- l_dk %>% addProviderTiles(provider, group = provider)
+}
+
+DKmap <- l_dk %>%
+  addLayersControl(baseGroups = names(esri),
+                   options = layersControlOptions(collapsed = FALSE)) %>%
+  addMiniMap(tiles = esri[[1]], toggleDisplay = TRUE,
+             position = "bottomright") %>%
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>% 
+  htmlwidgets::onRender("
+                        function(el, x) {
+                        var myMap = this;
+                        myMap.on('baselayerchange',
+                        function (e) {
+                        myMap.minimap.changeLayer(L.tileLayer.provider(e.name));
+                        })
+                        }") %>% 
+  addControl("", position = "topright")
+
+DKmap
