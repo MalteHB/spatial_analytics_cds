@@ -69,16 +69,16 @@ Raster data can be very big depending on the extent and resolution (grid size). 
 
 ```{r access raster, echo=TRUE, eval=FALSE}
 # Check if the data is in memory
-___(___)
+inMemory(canopy)
 
 # Use head() to peak at the first few records
-___(___)
+head(canopy)
 
 # Use getValues() to read the values into a vector
-vals <- ___(canopy)
+vals <- getValues(canopy)
 
 # Use hist() to create a histogram of the values
-___(vals)
+hist(vals)
 
 ```
 
@@ -97,13 +97,13 @@ The raster package has added useful methods for plotting both single and multi-b
 * Plot the manhattan raster with `plotRGB()` to see all layers plotted together as a single image.
 ```{r plot raster, eval=FALSE, echo=TRUE }
 # Plot the canopy raster (single raster)
-___
+plot(canopy)
 
 # Plot the manhattan raster (as a single image for each layer)
-___
+plot(manhattan)
 
 # Plot the manhattan raster as an image
-____
+plotRGB(manhattan)
 ```
 
 Nice work! As you saw, the `plot()` function can be used to plot single layers while the `plotRGB()` function can be used to combine layers into a single image.
