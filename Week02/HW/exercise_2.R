@@ -97,15 +97,15 @@ res(srtm)
 
 # /Start Code/ #
 # 1.
-zion_crs <- crs(zion, asText = TRUE)
-srtm2 <- projectRaster(srtm, crs = zion_crs)
-plot(srtm)
-plot(srtm2)
+zion_crs <- crs(zion, asText = TRUE) # Get the CRS.
+srtm2 <- projectRaster(srtm, crs = zion_crs) # Project 'srtm' to the CRS of 'zion'.
+plot(srtm) # Plot original 'strm'.
+plot(srtm2) # Plot new 'strm'.
 
 # 2.
-srtm_crs <- crs(srtm, asText = TRUE)
-zion2 <- st_transform(zion, crs = srtm_crs)
-plot(zion, max.plot = 11)
-plot(zion2, max.plot = 11)
+srtm_crs <- crs(srtm, asText = TRUE) # Get the CRS.
+zion2 <- st_transform(zion, crs = srtm_crs) # Project 'zion' to the CRS of 'srtm'.
+plot(zion, max.plot = 11) # Plot original 'zion'.
+plot(zion2, max.plot = 11) # Plot new 'zion'.
 
 # /End Code/ #
