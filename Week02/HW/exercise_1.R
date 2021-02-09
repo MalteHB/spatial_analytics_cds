@@ -24,11 +24,13 @@ print("Hello World") # This would be your code contribution
 # Additionally, we will use the spData and spDataLarge packages that provide new datasets.
 # These packages have been preloaded to the worker2 workspace.
 
-library(sf)
-library(raster)
-library(tmap)
-library(spData)
-library(spDataLarge)
+pacman::p_load(sf)
+pacman::p_load(raster)
+pacman::p_load(tmap)
+pacman::p_load(spData)
+# install.packages('BiocManager')
+# install.packages("spDataLarge", repos = "https://nowosad.github.io/drat/", type = "source")
+pacman::p_load(spDataLarge)
 
 #### Data sets #### 
 
@@ -74,6 +76,22 @@ tm_shape(nz_elev)  +
 
 # /Start Code/ #
 
+tm_shape(nz_elev)  +
+  tm_raster(title = "Elevation \n(Meters above sea level)", 
+            style = "cont",
+            palette = "-RdYlGn") +
+  tm_shape(nz) +
+  tm_borders(col = "black", 
+             lwd = 1.5) +
+  tm_scale_bar(breaks = c(0, 50, 100, 200, 400),
+               text.size = 1) +
+  tm_compass(position = c("RIGHT", "top"),
+             type = "rose", 
+             size = 2) +
+  tm_credits(text = "M. Højmark-Bertelsen, 20210209") +
+  tm_layout(main.title = "New Zealand",
+            bg.color = "lightblue",
+            inner.margins = c(0, 0, 0, 0))
 
 # /End Code/ #
 
@@ -88,6 +106,42 @@ zion = read_sf(system.file("vector/zion.gpkg", package = "spDataLarge"))
 # Your solution
 
 # /Start Code/ #
+tm_shape(srtm)  +
+  tm_raster(title = "Elevation \n(Meters above sea level)", 
+            style = "cont",
+            palette = "YlOrRd") +
+  tm_shape(zion) +
+  tm_borders(col = "black", 
+             lwd = 0.5) +
+  tm_scale_bar(breaks = c(0, 2.5, 5, 10, 20),
+               text.size = 1,
+               position = c("LEFT", "bottom")) +
+  tm_compass(position = c("RIGHT", "top"),
+             type = "rose", 
+             size = 2) +
+  tm_credits(text = "M. Højmark-Bertelsen, 20210209") +
+  tm_layout(main.title = "Zion National Park Area",
+            bg.color = "lightblue",
+            inner.margins = c(0, 0, 0, 0))
+
+
+
+tm_shape(zion)  +
+  tm_raster(title = "Elevation \n(Meters above sea level)", 
+            style = "cont",
+            palette = "-RdYlGn") +
+  tm_shape(nz) +
+  tm_borders(col = "black", 
+             lwd = 1.5) +
+  tm_scale_bar(breaks = c(0, 50, 100, 200, 400),
+               text.size = 1) +
+  tm_compass(position = c("RIGHT", "top"),
+             type = "rose", 
+             size = 2) +
+  tm_credits(text = "M. Højmark-Bertelsen, 20210209") +
+  tm_layout(main.title = "New Zealand",
+            bg.color = "lightblue",
+            inner.margins = c(0, 0, 0, 0))
 
 
 # /End Code/ #
