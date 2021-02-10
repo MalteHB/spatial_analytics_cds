@@ -14,7 +14,7 @@ This repository has the following directory structure:
 
 | Column | Description|
 |--------|:-----------|
-```Wn```| A folder for each n'th week assignment in the course.
+```Weekn```| A folder for each n'th week assignment in the course.
 
 ## Course overview and readings
 
