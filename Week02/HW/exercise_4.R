@@ -55,9 +55,32 @@ lc_data_masked <- mask(crop(lc_data, study_area), study_area)
 # Your solution
 
 # /Start Code/ #
-
-
-
+zion_crs <- crs(zion, asText = TRUE) # Get the CRS.
+srtm2 <- projectRaster(srtm, crs = zion_crs) # Project 'srtm' to the CRS of 'zion'.
+plot(srtm2)
+tm_shape(srtm2)  + # Load the raster data
+  tm_raster(title = "Elevation \n(MASL)", 
+            style = "cont",
+            palette = "-Greens", 
+            breaks = c(1000, 1500, 2000, 2500, 3000) # Define the breaks of the legend
+  ) +
+  tm_shape(zion) + # Load the vector data
+  tm_polygons(alpha = 0.05, # Using polygons to get transparency
+              lwd = 1,
+              border.col = "black") +
+  tm_scale_bar(breaks = c(0, 2.5, 5, 10, 20),
+               text.size = 1,
+               position = c("LEFT", "bottom")) +
+  tm_compass(position = c("RIGHT", "top"),
+             type = "radar", 
+             size = 2) +
+  tm_credits(position = c("LEFT", "bottom"),
+             text = "M. Højmark-Bertelsen, 20210209",
+             size = 0.8) +
+  tm_layout(main.title = "Zion National Park Area",
+            bg.color = "lightblue",
+            inner.margins = c(0.08, 0, 0, 0),
+            legend.position = c("right", "top")) # Changing legend position.
 # /End Code/ #
 
 

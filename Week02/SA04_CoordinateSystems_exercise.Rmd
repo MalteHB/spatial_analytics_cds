@@ -35,6 +35,15 @@ When the geographic data you read in with `sf` already has a CRS defined both `s
 * Use the `st_crs()` function to define/assign a CRS to the `trees` object.
 * Use `crs()` to identify if a CRS exists and what it is for the `canopy` and `manhattan` objects.
 * Use the `crs()` function to define/assign a CRS to the `manhattan` object.
+```{r}
+pacman::p_load(sr, raster)
+
+# Read in the rasters
+canopy <- raster("data/canopy.tif")
+manhattan <- brick("data/manhattan.tif")
+```
+
+
 
 ```{r crs, eval=FALSE}
 # Determine the CRS for the neighborhoods and trees vector objects

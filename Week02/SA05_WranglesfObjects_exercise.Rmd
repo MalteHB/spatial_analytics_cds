@@ -36,10 +36,15 @@ One important difference between `dplyr` with and without spatial data is that t
 * Use the `head()` function to check if your new data frame has a geometry column.
 * Drop the geometry column from `species_counts` using `st_set_geometry()`.
 * Confirm the geometry column has been dropped by re-running `head()`.
+```{r}
+pacman::p_load(sf, dplyr)
+trees <- st_read("data/trees.shp")
+
+```
 
 ```{r drop, eval=FALSE}
 # Create a data frame of counts by species
-species_counts <- count(trees, species, sort = TRUE)
+species_counts <- dplyr::count(trees, species, sort = TRUE)
 
 # Use head to see if the geometry column is in the data frame
 head(species_counts)
