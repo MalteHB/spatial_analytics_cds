@@ -38,28 +38,37 @@ John Hanson has created a dataset of all cities in the ancient Mediterranean and
 * Use `read_csv()` to load `Hanson2016_Cities_OxREP.csv` dataset from the provided URL and assign it to `cities` object
 
 ```{r load-cities, eval=FALSE}
-cities <- as.data.frame(read_csv("http://oxrep.classics.ox.ac.uk/oxrep/docs/Hanson2016/________________"))
+cities <- as.data.frame(read_csv("http://oxrep.classics.ox.ac.uk/oxrep/docs/Hanson2016/Hanson2016_Cities_OxREP.csv"))
 ```
 
 
 ... then reproject this data to EPSG 3035
 ```{r prj-cities, eval=FALSE}
 # Convert the table into an sf object on the basis of X and Y columns
-cities_sf <- ________(cities, coords = c("Longitude (X)", "Latitude (Y)"))
+cities_sf <- st_as_sf(cities, coords = c("Longitude (X)", "Latitude (Y)"))
 
 # Define the projection of Lat/Long coordinates as EPSG 4326
 cities_sf4326<- st_set_crs(cities_sf, ________)
 
+cities_sf4326 <- cities_sf
+st_crs(cities_sf4326) <- 4326
+
 # Transform the projection to a 2D projection using EPSG 3035
-cities_sf3035<- st_transform(cities_sf4326, ___________)
+cities_sf3035 <- st_transform(cities_sf4326, crs = 3035)
 
 # Verify the projection is 'projected' not 'geographic'
-______(cities_sf3035)
+head(cities_sf3035)
+
+# Answer for 'Question 1'.
+st_crs(3035)$units
 ```
 
 
 ### Question 1: 
 *What are the measurement units of the `cities_sf3035` object?*
+
+### Answer:
+The measurement units are meters as this is the default length metric.
 
 
 # Task 2: Create a buffer around each city and inspect the result
@@ -71,11 +80,13 @@ As each city and inscription corresponds to a dot on the map, the best way to gr
 
 ```{r buff, eval=FALSE}
 # Make buffer of 5 km. Check the units of your object to correctly assign value to dist
-cities_5km<- st_buffer(_____,dist = _________)
+st_crs(cities_sf3035)$units # Still meters :-)
+
+cities_5km <- st_buffer(cities_sf3035, dist = 5000)
 
 # Plot the first 10 buffers and cities to check result 
-plot(___________(___________)[1:10], col = "yellow")
-plot(___________(___________)[1:10], pch=20, cex = 0.1, add = TRUE)
+plot(st_geometry(cities_5km)[1:10], col = "yellow")
+plot(st_geometry(cities_sf3035)[1:10], pch=20, cex = 0.1, add = TRUE)
 
 ```
 
@@ -88,27 +99,27 @@ Well, a quick review may look ok, but you cannot be sure your buffers work well 
 
 ```{r tmap, eval=FALSE}
 # Grab the first 10 elements in the sf object and the buffer
-ten_buffers <- ________ %>% slice(1:10)
-ten_cities <- ________ %>% slice(1:10)
+ten_buffers <- cities_5km %>% slice(1:10)
+ten_cities <- cities_sf3035 %>% slice(1:10)
 
 # Create a quick tmap
 library(tmap)
 current.mode <- tmap_mode("plot")
 
 tm_shape(ten_buffers)  +
-  tm_polygons(col = ________) +
+  tm_polygons(col = "yellow") +
   tm_shape(ten_cities) +
-  tm_text("Ancient Toponym", size = ___, auto.placement = 5) +
-  tm_dots(col = __________, 
+  tm_text("Ancient Toponym", size = 0.8, auto.placement = 5) +
+  tm_dots(col = "blue", 
              size = 0.1) +
-  tm_scale_bar(breaks = ____________,
+  tm_scale_bar(breaks = c(5, 10, 20, 50),
                text.size = 10,
                position = c("LEFT", "bottom")) +
   tm_compass(position = c("LEFT", "bottom"),
              type = "rose", 
              size = 2) +
-  tm_credits(position = c(__________),
-             text = ________________) +
+  tm_credits(position = c("RIGHT", "top"),
+             text = "Malte Højmark-Bertelsen") +
   tm_layout(main.title = "Map with a scale",
             bg.color = "beige",
             inner.margins = c(0, 0, 0, 0))
@@ -136,22 +147,22 @@ library(jsonlite)
 library(tidytext)
 
 # Download the file and save as inscriptions.json (consider commenting out after you first run to avoid repeat downloading)
-download.file("https://sciencedata.dk/public/b6b6afdb969d378b70929e86e58ad975/EDH_subset_2021-02-15.json", "________/inscriptions.json")
+download.file("https://sciencedata.dk/public/b6b6afdb969d378b70929e86e58ad975/EDH_subset_2021-02-15.json", "data/inscriptions.json")
 
 # Load it into R from wherever you put it, and convert into a tibble
-list_json <- jsonlite::fromJSON("_______/inscriptions.json")
+list_json <- jsonlite::fromJSON("data/inscriptions.json")
 inscriptions = as_tibble(list_json)
 
 # Check the first couple lines and column names
-____(inscriptions)
-____(inscriptions)
+head(inscriptions)
+colnames(inscriptions)
 
 # Wrangle the coordinates into a plottable  format
 i_sm <- inscriptions %>% 
   slice(1:100) %>% 
   separate(col = coordinates, into = c("longitude","latitude"), sep = ",") %>%
-  mutate(latitude = as.numeric(__________),
-         longitude = as.numeric(__________)) 
+  mutate(latitude = as.numeric(gsub("[)]", "", latitude)),
+         longitude = as.numeric(gsub("[c(]", "", longitude)))
 
 # Check the result of the subset, does the location look reasonable?
 leaflet() %>% addTiles() %>% addMarkers(lng=i_sm$longitude,lat=i_sm$latitude)
@@ -161,6 +172,7 @@ Oooof. That was some serious wrangling!
 
 ### Question 2: 
 *Which part of the world are the inscriptions from?*
+Heaven on earth, the place of lasagna and pizza, I-T-A-L-Y <3
 
 # Task 5: Convert inscriptions into an sf object
 Now that the hard work is done, let's apply the wrangling to the full dataset and clean up the missing coordinates and outlier values.
@@ -172,18 +184,19 @@ Now that the hard work is done, let's apply the wrangling to the full dataset an
 
 ```{r insc-sf, eval=FALSE}
 i <- inscriptions %>% 
-  separate( __________) %>% 
-  mutate(___________) %>% 
-  filter(____________) %>% 
-  filter(__________) %>% 
+  separate(col = coordinates, into = c("longitude","latitude"), sep = ",") %>%
+  mutate(latitude = as.numeric(gsub("[)]", "", latitude)),
+         longitude = as.numeric(gsub("[c(]", "", longitude))) %>% 
+  filter(!is.na(longitude)) %>% 
+  filter(!is.na(latitude)) %>% 
   filter(longitude > 5 && longitude < 20)
 
 
 # Create a sf object
-insc_sf4326 <- st_as_sf(i, coords = ___________, crs = _________)
+insc_sf4326 <- st_as_sf(i, coords = c("longitude", "latitude"), crs=4326)
 
 # Plot
-plot(__________(insc_sf4326))
+plot(st_geometry(insc_sf4326))
 ```
 
 # Task 6: Select inscriptions that fall into the cities' buffer
@@ -199,26 +212,30 @@ To reduce the computational intensity of the final intersection, it is a good id
 
 ```{r intersection, eval=FALSE}
 # Project the sf object into EPSG3035 so it is consistent with cities and their buffers
-insc_sf3035 <- st_transform(________________)
+insc_sf3035 <- st_transform(cities_5km, crs = 3035)
 
 
 # Create a convex hull around the inscriptions's points dissolved into a MULTIPOINT
-insc_ch <- st_convex_hull(_________(insc_sf3035))
+insc_ch <- st_convex_hull(st_union(insc_sf3035))
 
 # Create a buffer from a cluster of cities that fall within the convex hull 
-cities_it <- st_intersection(insc_ch, _________(cities_5km))
+cities_it <- st_intersection(insc_ch, cities_5km)
 
 # Dissolve the 399 buffers into a single MULTIPOLYGON buffer feature
 c_buff <- st_union(cities_it)
 
 # Calculate the number of inscriptions in urban and rural areas. This may take a couple seconds
-insc_urban <- ____________(insc_sf3035, c_buff)
-insc_rural <- ____________(insc_sf3035, c_buff)
+insc_urban <- st_intersection(insc_sf3035, c_buff)
+insc_rural <- st_difference(insc_sf3035, c_buff)
+
+# To answer Question 3. 
+length(insc_urban)/length(insc_rural)
+
 ```
 
 ### Question 3: 
 *What is the ratio of urban to rural inscriptions?*
-
+The ratio is 1/1 since thre are 11 inscriptions in both urban and rural areas.
  
 # Task 7: CHALLENGE - Duplicates and average distance 
 
