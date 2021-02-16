@@ -62,23 +62,23 @@ Importantly, the `st_join()` function requires `sf` data frames as input and wil
 
 ```{r beech-neighbor, eval=FALSE}
 # Plot the beech on top of the neighborhoods
-___(___(neighborhoods))
-plot(beech, ___ = ___, pch = 16, col = "red")
+plot(st_geometry(neighborhoods))
+plot(beech, add = TRUE, pch = 16, col = "red")
 
 # Determine whether beech has class data.frame
-___(beech)
+class(beech)
 
 # Convert the beech geometry to a sf data frame
-beech_df <- ___(beech)
+beech_df <- st_sf(beech)
 
 # Confirm that beech now has the data.frame class
-___(beech_df)
+class(beech_df)
 
 # Join the beech trees with the neighborhoods
-beech_neigh <- ___(beech_df, neighborhoods)
+beech_neigh <- st_join(beech_df, neighborhoods)
 
 # Confirm that beech_neigh has the neighborhood information
-___(beech_neigh)
+head(beech_neigh)
 ```
 
 Great! The beech tree object did not have neighborhood information until you performed the spatial join with `st_join()`. Now that the neighborhood information is included you would be able to tabulate the count of trees by neighborhood (you will do this later).
@@ -101,38 +101,37 @@ A note about the output of functions that test relationships between two sets of
 
 ```{r intersect, eval=FALSE}
 # Create the point for the empire state building at 40.748433 degrees of northern latitude and 73.985656 west longitude. Longitude goes first! Remember the difference between east and west!
-empire_state <- st_sfc(st_point(c(_______, ________))) 
+empire_state <- st_sfc(st_point(c(-73.985656, 40.748433))) 
 
 # Define its projection as 4326 and then project to canopy
-st_crs(empire_state)<- _________   # can use crs_1
+st_crs(empire_state) <- 4326  # can use crs_1
 
 # Transform to the projection of canopy
-empire_state <-  st_transform(______, crs = ______(canopy))
+empire_state <-  st_transform(empire_state, crs = crs(canopy))
 
 # Create a buffer
-buf <- st_buffer(empire_state, ____ = 2000) 
+buf <- st_buffer(empire_state, dist = 2000) 
 
 # Identify neighborhoods that intersect with the buffer
-neighborhoods_int <- ___(buf, neighborhoods_crs)
+neighborhoods_int <- st_intersects(buf, neighborhoods_crs)
 
 # Identify neighborhoods contained by the buffer
-neighborhoods_cont <- ___(buf, neighborhoods_crs)
+neighborhoods_cont <- st_contains(buf, neighborhoods_crs)
 
 # Get the indexes of which neighborhoods intersect
 # and are contained by the buffer
-int <- neighborhoods_int[[___]]
-cont <- neighborhoods_cont[[___]]
+int <- neighborhoods_int[[1]]
+cont <- neighborhoods_cont[[1]]
 
 # Get the names of the names of neighborhoods in buffer
-neighborhoods_crs$ntaname[___]
+neighborhoods_crs$ntaname[cont]
 
 # Clip the neighborhood layer by the buffer (ignore the warning)
-neighborhoods_clip <- ___(buf, neighborhoods_crs)
+neighborhoods_clip <- st_intersection(buf, neighborhoods_crs)
 
 # Plot the geometry of the clipped neighborhoods
 plot(st_geometry(neighborhoods_clip), col = "red")
 plot(neighborhoods_crs[cont,], add = TRUE, col = "yellow")
-
 ```
 
 
@@ -159,25 +158,25 @@ In this exercise you'll measure the distance from the Empire State Building to a
 
 ```{r nearest, eval=FALSE}
 # Read in the parks object
-parks <- ___(___)
+parks <- st_read("data/parks.shp")
 
 # Test whether the CRS match
-___(empire_state) == ___(parks)
+all.equal(crs(empire_state), crs(parks))
 
 # Project parks to match empire state
-parks_es <- ___(parks, crs = ___(empire_state))
+parks_es <- st_transform(parks, crs = crs(empire_state))
 
 # Compute the distance between empire_state and parks_es
-d <- ___(___, parks_es)
+d <- st_distance(empire_state, parks_es)
 
 # Take a quick look at the result
-___(d)
+d[1:10]
 
 # Find the index of the nearest park
-nearest <- ___(d)
+nearest <- which.min(d)
 
 # Identify the park that is nearest
-parks_es[___, ]$signname
+parks_es[nearest, ]$signname
 ```
 
 Nice work! If you look at the result for the last line of code carefully you'll see that the closest park is Greeley Square Park, it's just around the corner from the Empire State Building. In this case one of our feature sets was a single feature. You may end up applying this function in situations where there are multiple features in both objects. In this situation `sf` will return a matrix.

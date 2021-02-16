@@ -31,29 +31,39 @@ Although, technically you can buffer data with unprojected coodinate reference s
 
 ## Instructions
 
-* Load the packages `sf` and `raster`along with the objects `df` and `manhattan` in your workspace.
+* Load the packages `sf` and `raster` along with the objects `df` and `manhattan` in your workspace.
 * Use `st_as_sf()` to convert this data frame to an `sf` object, use 4326 for the `crs` argument because these points are latitude/longitude -- an unprojected CRS.
 * Use `st_transform()` to transform the points' CRS to match the manhattan image so we can plot them together. You will need the `crs()` function to get the CRS of the manhattan image.
 * Buffer your points by 1000 meters (no need to specify "meters", since this is the projection unit, this will be the default). The radius argument is `dist`.
 * Plot the manhattan image, and the geometries of buffers and points together. This will require running `plotRGB()`, `plot()`, and `plot()` again, all together.
 
 ```{r buffer, eval=FALSE}
+pacman::p_load(sf, raster)
+
+df <- data.frame(place = c("Empire State Building", "Museum of Natural History"),
+                 longitude=c(-73.98566,-73.97398),
+                 latitude=c(40.74844,40.78132))
+
+
+manhattan <- brick("../Week02/data/manhattan.tif")
+
 # Review df
 df
 
 # Convert the data frame to an sf object             
-df_sf <- ___(df, coords = c("longitude", "latitude"), ___)
+df_sf <- st_as_sf(df, coords = c("longitude", "latitude"), crs=4326)
 
 # Transform the points to match the manhattan CRS
-df_crs <- ___(df_sf, crs = ___(manhattan, ___ = TRUE))
+df_crs <- st_transform(df_sf, crs = crs(manhattan, asText = TRUE))
+df_crs
 
 # Buffer the points
-df_buf <- ___(df_crs, dist = ___)
+df_buf <- st_buffer(df_crs, dist = 1000)
 
 # Plot the manhattan image (it is multi-band)
-___(manhattan)
-___(___(df_buf), col = "firebrick", add = TRUE)
-___(___(df_crs), pch = 16, add = TRUE)
+plotRGB(manhattan)
+plot(st_geometry(df_buf), col = "firebrick", add = TRUE)
+plot(st_geometry(df_crs), pch = 16, add = TRUE)
 ```
 
 Congratulations! Buffering is pretty straightforward in `sf`. The hardest part is probably getting your data into R and ensuring that they have the right coordinate reference system.
@@ -72,17 +82,17 @@ Also similar to buffering, centroid calculations should generally be performed o
 
 ```{r centroids, eval=FALSE}
 # Read in the neighborhods shapefile
-neighborhoods <- ___
+neighborhoods <- st_read("../Week02/data/neighborhoods.shp")
 
 # Project neighborhoods to match manhattan
-neighborhoods_tf <- ___(neighborhoods, crs = 32618)
+neighborhoods_tf <- st_transform(neighborhoods, crs = 32618)
 
 # Compute the neighborhood centroids
-centroids <- ___(neighborhoods_tf)
+centroids <- st_centroid(neighborhoods_tf)
 
 # Plot the neighborhood geometry
-plot(___(neighborhoods_tf), col = "grey", border = "white")
-plot(centroids, pch = 16, col = "firebrick", ___ = ___)
+plot(st_geometry(neighborhoods_tf), col = "grey", border = "white")
+plot(centroids, pch = 16, col = "firebrick", add = TRUE)
 ```
 
 Complete! You will find that knowing how to compute polygon centroids will serve you well in many contexts
@@ -104,22 +114,22 @@ In the `sf` package, there is a function for extracting the bounding box coordin
 
 ```{r NY-box, eval= FALSE}
 # Read in the beech trees shapefile
-beech <- ___(___)
+beech <- st_read("../Week02/data/beech.shp")
 
 # Plot the neighborhoods and beech trees
-plot(___(neighborhoods), col = "grey", border = "white")
-plot(beech, ___ = ___, pch = 16, col = "forestgreen")
+plot(st_geometry(neighborhoods), col = "grey", border = "white")
+plot(beech, add = TRUE, pch = 16, col = "forestgreen")
 
 # Compute the coordinates of the bounding box
-___(beech)
+st_bbox(beech)
 
 # Create a bounding box polygon
-beech_box <- ___(beech, n = ___)
+beech_box <- st_make_grid(beech, n = 1)
 
 # Plot the neighborhoods, add the beech trees and add the new box
-plot(___(neighborhoods), col = "grey", border = "white")
-plot(beech, add = ___, pch = 16, col = "forestgreen")
-plot(beech_box, add = ___)
+plot(st_geometry(neighborhoods), col = "grey", border = "white")
+plot(beech, add = TRUE, pch = 16, col = "forestgreen")
+plot(beech_box, add = TRUE)
 ```
 
 Bounding box completed! You can see in the plot that the bounding box is the minimum rectangular polygon that fits all the beech trees. You might now clip a series of layers to this box for a consistent extent. You will learn how to do this in a later exercise.
@@ -142,26 +152,26 @@ With polygons, `st_union()` will dissolve all the polygons into a single polygon
 ```{r buffers, eval=FALSE}
 # Buffer the beech trees by 3000 after projecting the object to manhattan crs
 beech_buffer <- beech %>% 
-  st_transform(crs = ___(___, asText=TRUE)) %>% 
-  st_buffer(___)
+  st_transform(crs = crs(manhattan, asText=TRUE)) %>% 
+  st_buffer(dist = 3000)
 
 # Limit the object to just geometry
-beech_buffers <- ___(beech_buffer)
+beech_buffers <- st_geometry(beech_buffer)
 
 # Compute the number of features in beech_buffer
-___(beech_buffers)
+length(beech_buffers)
 
 # Plot the tree buffers
-___(beech_buffers)
+plot(beech_buffers)
 
 # Dissolve the buffers
-beech_buf_union <- ___(beech_buffers)
+beech_buf_union <- st_union(beech_buffers)
 
 # Compute the number of features in beech_buf_union
-___(beech_buf_union)
+length(beech_buf_union)
 
 # Plot the dissolved buffers
-___(beech_buf_union)
+plot(beech_buf_union)
 
 ```
 
@@ -181,24 +191,24 @@ A more precise bounding polygon is sometimes needed, one that fits your data mor
 
 ```{r convexhull, eval=FALSE}
 # Look at the data frame to see the type of geometry
-___(beech)
+head(beech)
 
 # Convert the points to a single multi-point
-beech1 <- ___(beech)
+beech1 <- st_union(beech)
 
 # Look at the data frame to see the type of geometry
-___(beech1)
+head(beech1)
 
 # Confirm that we went from 17 features to 1 feature
-___(beech)
-___(beech1)
+length(beech)
+length(beech1)
 
 # Compute the tight bounding box
-beech_hull <- ___(beech1)
+beech_hull <- st_convex_hull(beech1)
 
 # Plot the points together with the hull
 plot(beech_hull, col = "red")
-plot(beech1, ___ = ___)
+plot(beech1, add = TRUE)
 ```
 
 Hooray! It takes a little getting used to, but when computing a convex hull, you'll need to remember to first dissolve/union/combine your individual features into a multi-feature. When you used `head()` you should have noticed that you started with “POINT” objects and after `st_union()` you had “MULTIPOINT”.
