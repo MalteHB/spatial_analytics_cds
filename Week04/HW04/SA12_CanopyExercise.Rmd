@@ -271,7 +271,7 @@ Note: In `map2`, you will make use of the `bbox` argument to force the view exte
 ```{r nice-map-1, eval=FALSE}
 # Create a map of the manhattan aerial photo
 manmap <- tm_shape(manhattan) + 
-  tm_raster()
+  tm_rgb()
 manmap
 ```
 
@@ -291,19 +291,21 @@ neighmap
 
 ```{r your-code-below, echo = TRUE}
 # Your code goes below
-map1 <- manmap+neighmap
+map1 <- manmap+neighmap  # Combining the borders and the aerial view
+
+tree_densitymap <- tm_shape(neighborhoods) + 
+  tm_polygons("tree_density", palette = "Greens", 
+              style = "quantile", n = 7, 
+              title = "Trees per sq. KM") # Creating tree density map
 
 avg_canopymap <- tm_shape(neighborhoods) + 
     tm_polygons("avg_canopy", palette = "Greens", 
         style = "quantile", n = 7, 
-        title = "Average tree canopy (%)") +
-  tmap_arrange(map1, asp = NA)
+        title = "Average tree canopy (%)")# Creating average canopy map
 
-avg_canopymap
-tmap_arrange(map1, avg_canopymap, asp = NA)
+tmap_arrange(tree_densitymap, map1, avg_canopymap, asp = NA)  # Arranging the three maps beside each other with the aerial view in the middle.
 
 ```
-
 
 
 Congratulations! You've created a nice final map you can share with colleagues to show how average tree canopy is a better representation of green space than the tree density based on the Street Tree Census data from NYC.
