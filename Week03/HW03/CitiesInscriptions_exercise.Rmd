@@ -48,7 +48,7 @@ cities <- as.data.frame(read_csv("http://oxrep.classics.ox.ac.uk/oxrep/docs/Hans
 cities_sf <- st_as_sf(cities, coords = c("Longitude (X)", "Latitude (Y)"))
 
 # Define the projection of Lat/Long coordinates as EPSG 4326
-cities_sf4326<- st_set_crs(cities_sf, ________)
+#cities_sf4326<- st_set_crs(cities_sf, ________)
 
 cities_sf4326 <- cities_sf
 st_crs(cities_sf4326) <- 4326
@@ -215,7 +215,7 @@ To reduce the computational intensity of the final intersection, it is a good id
 insc_sf3035 <- st_transform(cities_5km, crs = 3035)
 
 
-# Create a convex hull around the inscriptions's points dissolved into a MULTIPOINT
+# Create a convex hull around the inscription's points dissolved into a MULTIPOINT
 insc_ch <- st_convex_hull(st_union(insc_sf3035))
 
 # Create a buffer from a cluster of cities that fall within the convex hull 
@@ -230,12 +230,11 @@ insc_rural <- st_difference(insc_sf3035, c_buff)
 
 # To answer Question 3. 
 length(insc_urban)/length(insc_rural)
-
 ```
 
 ### Question 3: 
 *What is the ratio of urban to rural inscriptions?*
-The ratio is 1/1 since thre are 11 inscriptions in both urban and rural areas.
+The ratio is 1/1 since there are 11 inscriptions in both urban and rural areas.
  
 # Task 7: CHALLENGE - Duplicates and average distance 
 
@@ -250,6 +249,21 @@ Additionally, it's a good idea to check the average distance between inscription
 * Calculate the mean distance between the inscriptions and nearest settlement in the subset of cities with `st_distance()` and visually assess the trend. (The subset cities object should be reduced to those cities that fall within the convex hull of inscriptions). 
 
 ```{r overcounting and distance, eval=FALSE}
+
+# QUESTION 4
+clist <- st_intersects(cities_it, insc_sf3035)
+clist
+
+length(unique(unlist(clist)))
+which(!unique(unlist(clist)))
+
+nrow(insc_urban)
+
+# QUESTION 5
+dist_mat <- st_distance(insc_sf3035,
+                        cities_sf3035[st_nearest_feature(insc_sf3035, cities_sf3035$geometry),],
+                        by_element = TRUE)
+summary(dist_mat)
 
 ```
 
