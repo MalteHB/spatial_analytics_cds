@@ -2,9 +2,9 @@
 title: "12 - Compute Tree Canopy"
 author: "Malte Højmark-Bertelsen"
 date: "07/01/2021 updated `r format(Sys.time(), '%B %d, %Y')`" 
-output:
-  rmdformats::readthedown:
-    highlight: kate
+output: 
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}
@@ -38,7 +38,7 @@ You will produce counts of all trees by neighborhood in NYC and create a single 
 * The default for the `count()` function is to name the count field n. Use the `rename()` function from dplyr to change the column called `n` to `tree_cnt`.
 * Use `hist()` to create a quick histogram of the tree counts.
 
-```{r count-trees, eval=FALSE}
+```{r count-trees, eval=TRUE}
 # Load data and libraries
 pacman::p_load(sf, raster, dplyr)
 
@@ -84,7 +84,7 @@ We have the tree counts (from the previous exercise). In this exercise you will 
 * Use `mutate()` with the given `ifelse()` code to replace `NA`s with 0.
 * Create a new column in `neighborhoods` called `tree_density` which is `tree_cnt/area`. 
 
-```{r tree-density, eval=FALSE}
+```{r tree-density, eval=TRUE}
 # Compute areas and unclass
 areas <- unclass(st_area(neighborhoods))
 
@@ -118,7 +118,7 @@ In the previous exercises you computed tree density by neighborhood using tree c
 * Compute the mean of `canopy` values by neighborhood using `raster::extract()` with the argument fun = mean (this might take a minute).
 * Use `mutate`() to add a new column `avg_canopy` to neighborhoods, which is equal to `canopy_neighborhoods`.
 
-```{r tree-canopy, eval=FALSE}
+```{r tree-canopy, eval=TRUE}
 # Confirm that you have the neighborhood density results
 head(neighborhoods_counts)
 
@@ -149,7 +149,7 @@ As an initial review of the data you created you will compute correlations and c
 * Create a scatter plot of `tree_density` on the x-axis against `avg_canopy` on the y-axis using `ggplot()` and `geom_point()`. Also add a smooth using `stat_smooth()`.
 * Compute the correlation between tree density and average canopy with `cor()` by running the given code.
 
-```{r ggplot, eval=FALSE}
+```{r ggplot, eval=TRUE}
 # Load the ggplot2 package
 pacman::p_load(ggplot2)
 
@@ -186,7 +186,7 @@ The `geom_sf()` function operates like any other layer in `ggplot2` where you ca
 * Alter the map of `tree_density` by changing the colors with `scale_fill_gradient()`. The hex codes (a `#` followed by numbers) for shades of green have been provided.
 * Alter the map of `avg_canopy` by changing the colors with `scale_fill_gradient()`. The hex codes (a `#` followed by numbers) for shades of green have been provided.
 
-```{r map, eval=FALSE}
+```{r map, eval=TRUE}
 # Simplify name
 neighborhoods <- neighborhoods_avg_canopy
 
@@ -228,7 +228,7 @@ The `tmap` package is an excellent tool for making maps. You'll see that it simp
   + `style = "quantile"`
   + `n = 7`.
 
-```{r tmap, eval=FALSE}
+```{r tmap, eval=TRUE}
 # Load tmap library
 pacman::p_load(tmap)
 
@@ -268,7 +268,7 @@ Note: In `map2`, you will make use of the `bbox` argument to force the view exte
 * Remember to load `tmap`
 
 1. Create and view a map of the `manhattan` aerial image with `tm_shape()` and `tm_raster()`.
-```{r nice-map-1, eval=FALSE}
+```{r nice-map-1, eval=TRUE}
 # Create a map of the manhattan aerial photo
 manmap <- tm_shape(manhattan) + 
   tm_rgb()
@@ -277,7 +277,7 @@ manmap
 
 2. Create and view a map of the `neighboorhoods` borders with `tm_shape()` and `tm_borders()`.
 
-```{r nb-borders, eval=FALSE}
+```{r nb-borders, eval=TRUE}
 # Create a map of the neighborhood polygons
 neighmap <- tm_shape(neighborhoods) + 
   tm_borders(col = "black", lwd = 0.5, alpha = 0.5)
