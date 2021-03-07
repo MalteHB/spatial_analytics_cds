@@ -230,7 +230,7 @@ leaflet() %>%
 
 
 ##### a more demanding example! see content of folder...
-r <- raster("data/myDem_subset.tif")
+r <- raster("Week05/data/myDem_subset.tif")
 r
 plot(r)
 
