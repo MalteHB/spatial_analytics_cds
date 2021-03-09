@@ -33,26 +33,26 @@ The first step is to compute the optimal bandwidth for kernel smoothing under th
 
 ```{r bandwidth-exercise, eval = FALSE}
 # Install spatialkernel (the CRAN version is outdated, so you need to grab the most recent maintained version from Github). You may need to install.packages("devtools") and then run:
-devtools::install_github("becarioprecario/spatialkernel")
+#devtools::install_github("becarioprecario/spatialkernel")
 
 # Libraries
 library(spatstat)
 library(spatialkernel)
 
 # Data
-preston_crime <- ________("data/pcrime-spatstat.rds")
+preston_crime <- readRDS("data/pcrime-spatstat.rds")
 
 # Scan from 500m to 1000m in steps of 50m
 bw_choice <- spseg(
     preston_crime, 
-    h = seq(___, ___, by = ___),
+    h = seq(500, 1000, by = 50),
     opt = 1)
 
 # Plot the results and highlight the best bandwidth
-plotcv(bw_choice); abline(v = bw_choice$___, lty = 2, col = "red")
+plotcv(bw_choice); abline(v = bw_choice$cv, lty = 2, col = "red")
 
 # Print the best bandwidth
-print(bw_choice$___)
+print(bw_choice$hcv)
 ```
 
 
@@ -75,17 +75,17 @@ Normally you would run this process for at least 100 simulations, but that will 
 # Set the correct bandwidth and run for 10 simulations only
 seg10 <- spseg(
     pts = preston_crime, 
-    h = ___,
+    h = bw_choice$hcv,
     opt = 3,
-    ntest = ___, 
+    ntest = 10, 
     proc = FALSE)
 # Plot the segregation map for violent crime
-plotmc(seg10, "___")
+plotmc(seg10, "Violent crime")
 
 # You can modify the script above to run 1000 simulations if you have 20 mins of time. Alternatively, load the 'seg' object from data/.
-seg <- __(_____)
+seg <- readRDS("data/seg.rds")
 # Plot seg, the result of running 1000 simulations
-plotmc(seg, "___")
+plotmc(seg, "Violent crime")
 
 ```
 
@@ -115,23 +115,23 @@ The `seg` object from 1000 simulations can be loaded from data folder, as well a
 
 ```{r segregation, eval=FALSE}
 # Inspect the structure of the spatial segregation object
-str(___)
+str(seg)
 
 # Get the number of columns in the data so we can rearrange to a grid
-ncol <- length(seg$___)
+ncol <- length(seg$gridx)
 
 # Rearrange the probability column into a grid
-prob_violent <- list(x = seg$___,
-                     y = seg$___,
-                     z = matrix(seg$___[, "Violent crime"],
+prob_violent <- list(x = seg$gridx,
+                     y = seg$gridy,
+                     z = matrix(seg$p[, "Violent crime"],
                                 ncol = ncol))
 # You have basically georeferenced the image within data's coordinates
 image(prob_violent)
 
 # Rearrange the p-values, but choose a p-value threshold
-p_value <- list(x = seg$___,
-                y = seg$___,
-                z = matrix(seg$___[, "Violent crime"]< 0.05,
+p_value <- list(x = seg$gridx,
+                y = seg$gridy,
+                z = matrix(seg$p[, "Violent crime"]< 0.05,
                                 ncol = ncol))
 image(p_value)
 
@@ -141,7 +141,7 @@ segmap <- function(prob_list, pv_list, low, high){
 
   # background map
   library(raster)
-  preston_osm <- ______("data/osm_preston_gray.rds")
+  preston_osm <- readRDS("data/osm_preston_gray.rds")
   plotRGB(preston_osm)
 
   # p-value areas
@@ -160,7 +160,7 @@ segmap <- function(prob_list, pv_list, low, high){
 }
 
 # Map the probability and p-value
-segmap(prob_violent, p_value, ___, ___)
+segmap(prob_violent, p_value, 0.15, 0.05)
 ```
 
 Great work! By displaying the violent crime areas on the map, it's really easy to understand where the problem areas are.

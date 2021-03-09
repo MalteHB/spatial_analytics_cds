@@ -37,13 +37,12 @@ preston_osm <- readRDS("data/osm_preston_gray.rds")
 
 ```{r preston-crime, eval = FALSE}
 # Load the spatstat package
-___
+pacman::p_load(spatstat, spatialkernel)
 
 # Get some summary information on the dataset
-___
-
+summary(preston_crime)
 # Get a table of marks
-___(___(preston_crime))
+table(marks(preston_crime))
 
 # Define a function to create a map
 preston_map <- function(cols = c("green","red"), cex = c(1, 1), pch = c(1, 1)) {
@@ -53,9 +52,9 @@ preston_map <- function(cols = c("green","red"), cex = c(1, 1), pch = c(1, 1)) {
 
 # Draw the map with colors, sizes and plot character
 preston_map(
-  cols = c("___", "___"), 
+  cols = c("black", "red"), 
   cex = c(0.5, 1), 
-  pch = ___
+  pch = 19
 )
 
 ```
@@ -85,17 +84,17 @@ The `preston_crime` object and `spatstat` have been loaded.
 preston_crime
 
 # Use the split function to show the two point patterns
-crime_splits <- ___
+crime_splits <- split(preston_crime)
 
 # Plot the split crime
-___
+plot(crime_splits)
 
 # Compute the densities of both sets of points
-crime_densities <- ___
+crime_densities <- density(crime_splits)
 
 # Calc the violent density divided by the sum of both
-frac_violent_crime_density <- crime_densities[[___]] / 
-  (crime_densities[[___]] + crime_densities[[___]])
+frac_violent_crime_density <- crime_densities[["Violent crime"]] / 
+  (crime_densities[["Non-violent crime"]] + crime_densities[["Violent crime"]])
 
 # Plot the density of the fraction of violent crime
 plot(frac_violent_crime_density)
