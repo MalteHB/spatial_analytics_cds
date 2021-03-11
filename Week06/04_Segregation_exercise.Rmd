@@ -1,12 +1,10 @@
 ---
 title: "Spatial Segregation: Preston Crime continued"
-author: "Adela Sobotkova"
-date: "11/12/2020 updated `r format(Sys.time(), '%B %d, %Y')`"
+author: "Malte Højmark-Bertelsen"
+date: "11/03/2020 updated `r format(Sys.time(), '%B %d, %Y')`"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
-    highlight: tango
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}
@@ -31,7 +29,7 @@ The first step is to compute the optimal bandwidth for kernel smoothing under th
  - Call `plotcv()` on `bw_choice`.
  - Highlight the best bandwidth by adding a vertical line where the test statistic is maximized. 
 
-```{r bandwidth-exercise, eval = FALSE}
+```{r bandwidth-exercise, eval = TRUE}
 # Install spatialkernel (the CRAN version is outdated, so you need to grab the most recent maintained version from Github). You may need to install.packages("devtools") and then run:
 #devtools::install_github("becarioprecario/spatialkernel")
 
@@ -71,7 +69,7 @@ Normally you would run this process for at least 100 simulations, but that will 
  - Run the function for 10 simulations only via the `ntest` parameter.
  - The output consists of probability maps for each class in the marks of the data. Plot the map for the violent crimes. Add "Violent crime" as the title to your plots. 
 
-```{r optimum-bandwith, eval=FALSE}
+```{r optimum-bandwith, eval = TRUE}
 # Set the correct bandwidth and run for 10 simulations only
 seg10 <- spseg(
     pts = preston_crime, 
@@ -113,7 +111,7 @@ The `seg` object from 1000 simulations can be loaded from data folder, as well a
 * Create `p_value` as in the previous step, except that the `z` element is logical, and `TRUE` when the `stpvalue` element of seg is less than 0.05.
 * Call the `segmap()` function shown in the script to find areas where the probability of a crime being violent is above 0.15. Use 0.05 as the lower probability.
 
-```{r segregation, eval=FALSE}
+```{r segregation, eval = TRUE}
 # Inspect the structure of the spatial segregation object
 str(seg)
 
